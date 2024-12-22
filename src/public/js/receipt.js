@@ -1,6 +1,6 @@
 let debt = 0;
 let dealerId = "";
-
+let dealerName = "";
 function listen() {
   const nameInput = document.querySelector(".name");
   const addressInput = document.querySelector('input[name="input_address"]');
@@ -14,7 +14,7 @@ function listen() {
   const formattedDate = today.toISOString().split("T")[0]; // Định dạng "YYYY-MM-DD"
   dateInput.value = formattedDate;
 
-  nameInput.addEventListener("blur", () =>
+  nameInput.addEventListener("change", () =>
     handleNameInput(nameInput, addressInput, phoneInput, emailInput)
   );
 }
@@ -37,6 +37,7 @@ async function handleNameInput(
   try {
     const matchedAgency = await getDealerInfo(inputName);
     if (matchedAgency) {
+      dealerName = matchedAgency.ten_dai_ly || "";
       addressInput.value = matchedAgency.quan || "";
       phoneInput.value = matchedAgency.sdt || "";
       emailInput.value = matchedAgency.email || "";
@@ -63,7 +64,6 @@ function clearStorage() {
 }
 
 async function createReceipt() {
-  const name = document.querySelector('input[name="input_name"]').value.trim();
   const address = document
     .querySelector('input[name="input_address"]')
     .value.trim();
@@ -79,7 +79,7 @@ async function createReceipt() {
 
   // Kiểm tra dữ liệu đầu vào
   if (
-    !name ||
+    !dealerName ||
     !address ||
     !phone ||
     !email ||
@@ -101,7 +101,7 @@ async function createReceipt() {
   }
 
   const docDefinition = generateReceiptPDF(
-    name,
+    dealerName,
     address,
     phone,
     email,
@@ -110,7 +110,7 @@ async function createReceipt() {
   );
 
   // Tạo và tải file PDF
-  pdfMake.createPdf(docDefinition).download(`phieu-thu-tien-${name}.pdf`);
+  pdfMake.createPdf(docDefinition).download(`phieu-thu-tien-${dealerName}.pdf`);
 
   const newReceiptCode = await getNewReceiptCode();
   const receiptData = {
@@ -131,6 +131,8 @@ async function createReceipt() {
   } catch (error) {
     console.error("Có lỗi xảy ra khi gửi dữ liệu:", error);
   }
+
+  alert("Tạo phiếu thu tiền thành công!");
 
   // Tải lại trang sau khi hoàn tất
   location.reload(); // Load lại trang
